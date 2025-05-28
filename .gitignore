@@ -15,7 +15,6 @@
 /bin/internal/bootstrap.sh
 /bin/mingit/
 /dev/benchmarks/mega_gallery/
-/dev/bots/.recipe_deps
 /dev/bots/android_tools/
 /dev/devicelab/ABresults*.json
 /dev/docs/doc/
