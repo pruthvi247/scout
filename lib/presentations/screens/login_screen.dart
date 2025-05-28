@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:scout/mocks/registered_numbers.dart';
 import 'package:scout/handlers/login_checker.dart';
+import 'package:scout/handlers/utils/phone_validator.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -42,16 +43,6 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  String? _validatePhone(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Enter phone number';
-    }
-    if (!RegExp(r'^[6-9]\d{9}\$').hasMatch(value)) {
-      return 'Enter valid 10-digit Indian number';
-    }
-    return null;
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -63,7 +54,7 @@ class _LoginScreenState extends State<LoginScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Image.asset(
-                'party-images/party-1.jpeg',
+                'assets/party-images/party-1.jpeg',
                 width: 120,
                 height: 120,
                 fit: BoxFit.cover,
@@ -86,7 +77,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     border: OutlineInputBorder(),
                     prefixIcon: Icon(Icons.phone),
                   ),
-                  validator: _validatePhone,
+                  validator: validateIndianPhone,
                   enabled: !_isLoading,
                 ),
               ),

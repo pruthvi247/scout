@@ -45,5 +45,11 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+<string>This app needs camera access to take activity photos.</string>
+<key>NSPhotoLibraryUsageDescription</key>
+<string>This app needs photo library access to select activity photos.</string>
+<key>NSLocationWhenInUseUsageDescription</key>
+<string>This app needs your location to tag activities with your current address.</string>
 </dict>
 </plist>

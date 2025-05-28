@@ -15,11 +15,11 @@ class _IntroScreenState extends State<IntroScreen> {
   int _currentPage = 0;
   List<String> _quotes = [];
   final List<String> _images = [
-    'intro-images/vnr1.jpeg',
-    'intro-images/vnr2.jpeg',
-    'intro-images/vnr3.jpg',
-    'intro-images/vnr4.jpeg',
-    'intro-images/vnr5.jpeg',
+    'assets/intro-images/vnr1.jpeg',
+    'assets/intro-images/vnr2.jpeg',
+    'assets/intro-images/vnr3.jpg',
+    'assets/intro-images/vnr4.jpeg',
+    'assets/intro-images/vnr5.jpeg',
   ];
 
   @override
@@ -29,7 +29,8 @@ class _IntroScreenState extends State<IntroScreen> {
   }
 
   Future<void> _loadQuotes() async {
-    final quotesString = await rootBundle.loadString('intro-images/quotes.txt');
+    final quotesString =
+        await rootBundle.loadString('assets/intro-images/quotes.txt');
     setState(() {
       _quotes =
           quotesString.split('\n').where((q) => q.trim().isNotEmpty).toList();
