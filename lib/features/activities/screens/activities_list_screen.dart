@@ -56,8 +56,16 @@ class _ActivitiesListScreenState extends ConsumerState<ActivitiesListScreen> {
         ),
         actions: [
           IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () async {
+              await ref.read(provider.notifier).refresh();
+            },
+            tooltip: 'Refresh activities',
+          ),
+          IconButton(
             icon: const Icon(Icons.filter_list),
             onPressed: _showFilterDialog,
+            tooltip: 'Filter activities',
           ),
         ],
       ),

@@ -9,6 +9,8 @@ import '../features/activities/screens/create_activity_screen.dart';
 import '../features/activities/screens/activity_detail_screen.dart';
 import '../features/organization/screens/organization_screen.dart';
 import '../features/members/screens/members_list_screen.dart';
+import '../features/notifications/screens/notifications_screen.dart';
+import '../features/volunteers/screens/events_list_screen.dart';
 import '../features/auth/providers/auth_provider.dart';
 
 // Route paths
@@ -92,8 +94,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: AppRoutes.notifications,
-        builder: (context, state) =>
-            const PlaceholderScreen(title: 'Notifications'),
+        builder: (context, state) => const NotificationsScreen(),
       ),
       GoRoute(
         path: AppRoutes.profile,
@@ -102,6 +103,15 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.members,
         builder: (context, state) => const MembersListScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.volunteers,
+        builder: (context, state) =>
+            const PlaceholderScreen(title: 'Volunteers'),
+      ),
+      GoRoute(
+        path: AppRoutes.events,
+        builder: (context, state) => const EventsListScreen(),
       ),
     ],
   );

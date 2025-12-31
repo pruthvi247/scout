@@ -7,9 +7,12 @@ import '../../auth/providers/auth_provider.dart';
 import '../../activities/screens/activities_list_screen.dart';
 import '../../organization/screens/organization_screen.dart';
 import '../../members/screens/members_list_screen.dart';
+import '../../volunteers/screens/volunteer_assignments_screen.dart';
+import '../../volunteers/screens/events_list_screen.dart';
 import '../../activities/providers/activity_provider.dart';
 import '../../organization/providers/organization_provider.dart';
 import '../../members/providers/members_provider.dart';
+import '../../notifications/providers/notification_provider.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -24,6 +27,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(currentUserProvider);
+    final unreadCount = ref.watch(unreadCountProvider);
 
     if (user == null) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
@@ -36,9 +40,38 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       appBar: AppBar(
         title: Text(navigationItems[_selectedIndex].label),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined),
-            onPressed: () => context.push('/notifications'),
+          Stack(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.notifications_outlined),
+                onPressed: () => context.push('/notifications'),
+              ),
+              if (unreadCount.count > 0)
+                Positioned(
+                  right: 8,
+                  top: 8,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      shape: BoxShape.circle,
+                    ),
+                    constraints: const BoxConstraints(
+                      minWidth: 16,
+                      minHeight: 16,
+                    ),
+                    child: Text(
+                      unreadCount.count > 9 ? '9+' : '${unreadCount.count}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+            ],
           ),
         ],
       ),
@@ -541,78 +574,23 @@ class _MembersTab extends StatelessWidget {
   }
 }
 
-class _VolunteerAssignmentsTab extends StatelessWidget {
+class _VolunteerAssignmentsTab extends ConsumerWidget {
   @override
-  Widget build(BuildContext context) {
-    return _PlaceholderTab(
-      title: 'My Assignments',
-      description: 'View and complete your assigned tasks',
-      icon: Icons.assignment,
-    );
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(currentUserProvider);
+
+    if (user == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    // Assuming we have the volunteer ID from the user
+    return VolunteerAssignmentsScreen(volunteerId: user.id);
   }
 }
 
 class _VolunteerEventsTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return _PlaceholderTab(
-      title: 'Events',
-      description: 'View upcoming events and record attendance',
-      icon: Icons.event,
-    );
-  }
-}
-
-class _PlaceholderTab extends StatelessWidget {
-  final String title;
-  final String description;
-  final IconData icon;
-
-  const _PlaceholderTab({
-    required this.title,
-    required this.description,
-    required this.icon,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              size: 80,
-              color: theme.colorScheme.primary.withValues(alpha: 0.5),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              title,
-              style: theme.textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 12),
-            Text(
-              description,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            Chip(
-              label: const Text('Coming Soon'),
-              backgroundColor: theme.colorScheme.secondaryContainer,
-            ),
-          ],
-        ),
-      ),
-    );
+    return const EventsListScreen();
   }
 }
