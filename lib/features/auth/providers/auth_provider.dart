@@ -3,6 +3,7 @@ import '../../../models/user_model.dart';
 import '../../../core/providers/network_providers.dart';
 import '../../../core/network/auth_api_service.dart';
 import '../../../core/storage/secure_storage_service.dart';
+import '../../../core/utils/app_logger.dart';
 
 /// Authentication state
 class AuthState {
@@ -47,18 +48,35 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> _checkAuthStatus() async {
     state = state.copyWith(isLoading: true);
     try {
+      appLogger.debug('Checking authentication status', tag: 'AuthProvider');
       final isLoggedIn = await _storageService.isLoggedIn();
+
       if (isLoggedIn) {
+        appLogger.info(
+          'User is logged in, fetching user data',
+          tag: 'AuthProvider',
+        );
         final user = await _authApiService.getCurrentUser();
         state = state.copyWith(
           user: user,
           isAuthenticated: true,
           isLoading: false,
         );
+        appLogger.info(
+          'User authenticated: ${user.fullName}',
+          tag: 'AuthProvider',
+        );
       } else {
+        appLogger.debug('No active session found', tag: 'AuthProvider');
         state = state.copyWith(isLoading: false);
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      appLogger.error(
+        'Auth status check failed',
+        tag: 'AuthProvider',
+        error: e,
+        stackTrace: stackTrace,
+      );
       // Token might be invalid, clear storage
       await _storageService.clearAll();
       state = state.copyWith(isLoading: false, error: e.toString());
@@ -69,17 +87,28 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> login(String username, String password) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
+      appLogger.info(
+        'Attempting login for user: $username',
+        tag: 'AuthProvider',
+      );
+
       // Call login API
       final loginResponse = await _authApiService.login(username, password);
+      appLogger.debug('Login API response received', tag: 'AuthProvider');
 
       // Save tokens
       await _storageService.saveAccessToken(loginResponse.accessToken);
       if (loginResponse.refreshToken != null) {
         await _storageService.saveRefreshToken(loginResponse.refreshToken!);
       }
+      appLogger.debug('Tokens saved to secure storage', tag: 'AuthProvider');
 
       // Get user profile
       final user = await _authApiService.getCurrentUser();
+      appLogger.info(
+        'User profile fetched: ${user.fullName} (${user.role})',
+        tag: 'AuthProvider',
+      );
 
       // Save user info
       await _storageService.saveUserId(user.id);
@@ -90,7 +119,18 @@ class AuthNotifier extends StateNotifier<AuthState> {
         isAuthenticated: true,
         isLoading: false,
       );
-    } catch (e) {
+
+      appLogger.logUserAction(
+        'Login',
+        details: {'username': username, 'userId': user.id, 'role': user.role},
+      );
+    } catch (e, stackTrace) {
+      appLogger.error(
+        'Login failed for user: $username',
+        tag: 'AuthProvider',
+        error: e,
+        stackTrace: stackTrace,
+      );
       state = state.copyWith(isLoading: false, error: e.toString());
       rethrow;
     }
@@ -100,12 +140,38 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> logout() async {
     state = state.copyWith(isLoading: true);
     try {
-      // Call logout API
-      await _authApiService.logout();
-    } catch (e) {
-      // Continue logout even if API call fails
-    } finally {
+      appLogger.info('Logging out user', tag: 'AuthProvider');
+
+      // Try to call logout API, but continue even if it fails
+      // Backend may not have logout endpoint implemented
+      try {
+        await _authApiService.logout();
+        appLogger.debug('Logout API call successful', tag: 'AuthProvider');
+      } catch (e) {
+        appLogger.warning(
+          'Logout API call failed, continuing with local cleanup',
+          tag: 'AuthProvider',
+          error: e,
+        );
+        // Continue with local cleanup even if API call fails
+      }
+
       // Clear local storage
+      await _storageService.clearAll();
+      appLogger.info('Local storage cleared', tag: 'AuthProvider');
+
+      // Reset state
+      state = const AuthState();
+
+      appLogger.logUserAction('Logout');
+    } catch (e, stackTrace) {
+      appLogger.error(
+        'Logout failed',
+        tag: 'AuthProvider',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      // Still clear storage and reset state even on error
       await _storageService.clearAll();
       state = const AuthState();
     }

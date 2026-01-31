@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:logger/logger.dart';
 import '../constants/api_constants.dart';
 import '../../models/activity_model.dart';
+import '../utils/app_logger.dart';
 
 /// API service for activity-related operations
 class ActivityApiService {
@@ -14,22 +15,22 @@ class ActivityApiService {
   Future<Activity> createActivity(CreateActivityRequest request) async {
     try {
       final requestData = request.toJson();
-      _logger.d('Creating activity: ${request.title}');
-      _logger.d('Request data: $requestData');
+      appLogger.info('Creating activity: ${request.title}', tag: 'ActivityAPI');
+      appLogger.debug('Request data', tag: 'ActivityAPI', data: requestData);
+      
       final response = await _dio.post(
         ApiConstants.activities,
         data: requestData,
       );
-      _logger.i('Activity created successfully');
+      
+      appLogger.info('Activity created successfully', tag: 'ActivityAPI');
       return Activity.fromJson(response.data);
     } on DioException catch (e) {
-      _logger.e('Failed to create activity: ${e.message}');
-      _logger.e('Response data: ${e.response?.data}');
-      _logger.e('Status code: ${e.response?.statusCode}');
-      throw _handleError(e);
-    }
-  }
-
+      appLogger.error(
+        'Failed to create activity',
+        tag: 'ActivityAPI',
+        error: e,
+        stackTrace: e.stackTrace,
   /// Get list of activities with optional filters
   Future<List<Activity>> getActivities({
     String? status,
@@ -42,7 +43,6 @@ class ActivityApiService {
     int limit = 20,
   }) async {
     try {
-      _logger.d('Fetching activities (page: $page, limit: $limit)');
       final queryParams = <String, dynamic>{'page': page, 'limit': limit};
 
       if (status != null) queryParams['status'] = status;
@@ -58,7 +58,45 @@ class ActivityApiService {
       }
       if (userId != null) queryParams['user_id'] = userId;
 
+      appLogger.debug(
+        'Fetching activities',
+        tag: 'ActivityAPI',
+        data: queryParams,
+      );
+
       final response = await _dio.get(
+        ApiConstants.activities,
+        queryParameters: queryParams,
+      );
+
+      final activities = (response.data as List)
+          .map((json) => Activity.fromJson(json))
+          .toList();
+
+      appLogger.info(
+        'Fetched ${activities.length} activities',
+        tag: 'ActivityAPI',
+      );
+      
+      return activities;
+    } on DioException catch (e) {
+      appLogger.error(
+        'Failed to fetch activities',
+        tag: 'ActivityAPI',
+        error: e,
+        stackTrace: e.stackTrace,
+      );
+      throw _handleError(e);
+    } catch (e, stackTrace) {
+      appLogger.error(
+        'Unexpected error fetching activities',
+        tag: 'ActivityAPI',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    }
+  }   final response = await _dio.get(
         ApiConstants.activities,
         queryParameters: queryParams,
       );

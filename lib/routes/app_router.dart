@@ -4,11 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../features/auth/screens/login_screen.dart';
 import '../features/home/screens/home_screen.dart';
 import '../features/profile/screens/profile_screen.dart';
+import '../features/dashboard/screens/dashboard_screen.dart';
 import '../features/activities/screens/activities_list_screen.dart';
 import '../features/activities/screens/create_activity_screen.dart';
 import '../features/activities/screens/activity_detail_screen.dart';
 import '../features/organization/screens/organization_screen.dart';
 import '../features/members/screens/members_list_screen.dart';
+import '../features/members/screens/member_detail_screen.dart';
 import '../features/notifications/screens/notifications_screen.dart';
 import '../features/volunteers/screens/events_list_screen.dart';
 import '../features/auth/providers/auth_provider.dart';
@@ -70,12 +72,12 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: AppRoutes.dashboard,
-        builder: (context, state) =>
-            const PlaceholderScreen(title: 'Dashboard'),
+        builder: (context, state) => const DashboardScreen(),
       ),
       GoRoute(
         path: AppRoutes.activities,
-        builder: (context, state) => const ActivitiesListScreen(),
+        builder: (context, state) =>
+            const ActivitiesListScreen(showOnlyMyActivities: false),
       ),
       GoRoute(
         path: AppRoutes.createActivity,
@@ -103,6 +105,13 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.members,
         builder: (context, state) => const MembersListScreen(),
+      ),
+      GoRoute(
+        path: '/members/:id',
+        builder: (context, state) {
+          final id = int.parse(state.pathParameters['id']!);
+          return MemberDetailScreen(memberId: id);
+        },
       ),
       GoRoute(
         path: AppRoutes.volunteers,

@@ -3,6 +3,7 @@ import '../../../core/network/activity_api_service.dart';
 import '../../../core/providers/network_providers.dart';
 import '../../../models/activity_model.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../../core/utils/app_logger.dart';
 
 /// Provider for ActivityApiService
 final activityApiServiceProvider = Provider<ActivityApiService>((ref) {
@@ -69,12 +70,28 @@ class ActivityListNotifier extends StateNotifier<ActivityListState> {
     }
 
     try {
+      appLogger.debug(
+        'Loading activities',
+        tag: 'ActivityProvider',
+        data: {
+          'refresh': refresh,
+          'statusFilter': statusFilter,
+          'userIdFilter': userIdFilter,
+          'page': refresh ? 1 : state.currentPage,
+        },
+      );
+
       final activities = await _activityApiService.getActivities(
         status: statusFilter,
         activityType: activityTypeFilter,
         userId: userIdFilter,
         page: refresh ? 1 : state.currentPage,
         limit: 20,
+      );
+
+      appLogger.info(
+        'Loaded ${activities.length} activities',
+        tag: 'ActivityProvider',
       );
 
       if (refresh) {
@@ -92,7 +109,13 @@ class ActivityListNotifier extends StateNotifier<ActivityListState> {
           currentPage: state.currentPage + 1,
         );
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      appLogger.error(
+        'Failed to load activities',
+        tag: 'ActivityProvider',
+        error: e,
+        stackTrace: stackTrace,
+      );
       state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
@@ -184,8 +207,12 @@ class ActivityDetailNotifier extends StateNotifier<ActivityDetailState> {
         activityId,
       );
       state = ActivityDetailState(activity: updatedActivity, isLoading: false);
+
+      // Return success indicator for caller to refresh lists
+      return Future.value();
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
+      rethrow;
     }
   }
 
@@ -200,8 +227,12 @@ class ActivityDetailNotifier extends StateNotifier<ActivityDetailState> {
         reason,
       );
       state = ActivityDetailState(activity: updatedActivity, isLoading: false);
+
+      // Return success indicator for caller to refresh lists
+      return Future.value();
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
+      rethrow;
     }
   }
 

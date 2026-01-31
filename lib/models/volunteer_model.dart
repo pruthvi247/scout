@@ -84,11 +84,7 @@ class PerformanceHistory {
   final double score;
   final String? notes;
 
-  PerformanceHistory({
-    required this.date,
-    required this.score,
-    this.notes,
-  });
+  PerformanceHistory({required this.date, required this.score, this.notes});
 
   factory PerformanceHistory.fromJson(Map<String, dynamic> json) =>
       _$PerformanceHistoryFromJson(json);
@@ -139,11 +135,7 @@ class EventLocation {
   final double? lng;
   final String address;
 
-  EventLocation({
-    this.lat,
-    this.lng,
-    required this.address,
-  });
+  EventLocation({this.lat, this.lng, required this.address});
 
   factory EventLocation.fromJson(Map<String, dynamic> json) =>
       _$EventLocationFromJson(json);

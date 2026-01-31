@@ -16,11 +16,49 @@ class OrganizationApiService {
       _logger.d('Fetching organization tree');
       final response = await _dio.get(ApiConstants.organizationTree);
       _logger.i('Organization tree fetched successfully');
-      return OrganizationTree.fromJson(response.data);
+
+      // Backend returns a List of root nodes with nested children
+      final data = response.data;
+
+      if (data is! List) {
+        _logger.e(
+          'Invalid response format: expected List, got ${data.runtimeType}',
+        );
+        throw 'Invalid response format from server';
+      }
+
+      final nodes = data
+          .map((json) {
+            try {
+              return OrganizationNode.fromJson(json as Map<String, dynamic>);
+            } catch (e) {
+              _logger.w('Failed to parse node: $e');
+              return null;
+            }
+          })
+          .whereType<OrganizationNode>()
+          .toList();
+
+      // Wrap in OrganizationTree structure
+      return OrganizationTree(roots: nodes, totalNodes: _countNodes(nodes));
     } on DioException catch (e) {
       _logger.e('Failed to fetch organization tree: ${e.message}');
       throw _handleError(e);
+    } catch (e) {
+      _logger.e('Unexpected error fetching organization tree: $e');
+      rethrow;
     }
+  }
+
+  /// Count total nodes recursively
+  int _countNodes(List<OrganizationNode> nodes) {
+    int count = nodes.length;
+    for (var node in nodes) {
+      if (node.children != null) {
+        count += _countNodes(node.children!);
+      }
+    }
+    return count;
   }
 
   /// Get list of organization nodes with optional filters

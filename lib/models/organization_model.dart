@@ -24,8 +24,7 @@ class OrganizationNode {
   @JsonKey(name: 'updated_at')
   final DateTime updatedAt;
 
-  // Client-side only - children loaded from tree
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  // Children nodes from API (included in tree response)
   final List<OrganizationNode>? children;
 
   OrganizationNode({
@@ -67,15 +66,11 @@ class OrganizationNode {
   }
 }
 
-@JsonSerializable()
+// OrganizationTree - represents the full tree structure
+// Backend returns array of root nodes, so we use List instead of single root
 class OrganizationTree {
-  final OrganizationNode root;
-  @JsonKey(name: 'total_nodes')
+  final List<OrganizationNode> roots;
   final int totalNodes;
 
-  OrganizationTree({required this.root, required this.totalNodes});
-
-  factory OrganizationTree.fromJson(Map<String, dynamic> json) =>
-      _$OrganizationTreeFromJson(json);
-  Map<String, dynamic> toJson() => _$OrganizationTreeToJson(this);
+  OrganizationTree({required this.roots, required this.totalNodes});
 }

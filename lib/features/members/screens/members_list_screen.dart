@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/constants/enums.dart';
 import '../../../models/user_model.dart';
 import '../providers/members_provider.dart';
@@ -201,7 +202,7 @@ class MemberCard extends StatelessWidget {
         ),
         trailing: const Icon(Icons.chevron_right),
         onTap: () {
-          // Navigate to member detail (to be implemented)
+          context.push('/members/${member.id}');
         },
       ),
     );

@@ -15,10 +15,7 @@ class VolunteerApiService {
     int limit = 20,
   }) async {
     try {
-      final queryParams = <String, dynamic>{
-        'page': page,
-        'limit': limit,
-      };
+      final queryParams = <String, dynamic>{'page': page, 'limit': limit};
 
       _logger.d('Fetching volunteers with params: $queryParams');
 
@@ -59,9 +56,13 @@ class VolunteerApiService {
 
   // Create assignment for volunteer
   Future<Assignment> createAssignment(
-      int volunteerId, CreateAssignmentRequest request) async {
+    int volunteerId,
+    CreateAssignmentRequest request,
+  ) async {
     try {
-      _logger.d('Creating assignment for volunteer $volunteerId: ${request.toJson()}');
+      _logger.d(
+        'Creating assignment for volunteer $volunteerId: ${request.toJson()}',
+      );
 
       final response = await _dio.post(
         '${ApiConstants.volunteers}/$volunteerId/assignments',
@@ -97,9 +98,14 @@ class VolunteerApiService {
 
   // Update assignment
   Future<Assignment> updateAssignment(
-      int volunteerId, int assignmentId, Map<String, dynamic> updates) async {
+    int volunteerId,
+    int assignmentId,
+    Map<String, dynamic> updates,
+  ) async {
     try {
-      _logger.d('Updating assignment $assignmentId for volunteer $volunteerId: $updates');
+      _logger.d(
+        'Updating assignment $assignmentId for volunteer $volunteerId: $updates',
+      );
 
       final response = await _dio.put(
         '${ApiConstants.volunteers}/$volunteerId/assignments/$assignmentId',
@@ -115,10 +121,15 @@ class VolunteerApiService {
   }
 
   // Update performance score
-  Future<void> updatePerformanceScore(int volunteerId, double score,
-      {String? notes}) async {
+  Future<void> updatePerformanceScore(
+    int volunteerId,
+    double score, {
+    String? notes,
+  }) async {
     try {
-      _logger.d('Updating performance score for volunteer $volunteerId: $score');
+      _logger.d(
+        'Updating performance score for volunteer $volunteerId: $score',
+      );
 
       await _dio.post(
         '${ApiConstants.volunteers}/$volunteerId/score',
@@ -127,14 +138,17 @@ class VolunteerApiService {
 
       _logger.d('Performance score updated successfully');
     } catch (e) {
-      _logger.e('Error updating performance score for volunteer $volunteerId: $e');
+      _logger.e(
+        'Error updating performance score for volunteer $volunteerId: $e',
+      );
       rethrow;
     }
   }
 
   // Get performance history
   Future<List<PerformanceHistory>> getPerformanceHistory(
-      int volunteerId) async {
+    int volunteerId,
+  ) async {
     try {
       _logger.d('Fetching performance history for volunteer: $volunteerId');
 
@@ -147,7 +161,9 @@ class VolunteerApiService {
           .map((json) => PerformanceHistory.fromJson(json))
           .toList();
     } catch (e) {
-      _logger.e('Error fetching performance history for volunteer $volunteerId: $e');
+      _logger.e(
+        'Error fetching performance history for volunteer $volunteerId: $e',
+      );
       rethrow;
     }
   }
@@ -161,10 +177,7 @@ class VolunteerApiService {
     int limit = 20,
   }) async {
     try {
-      final queryParams = <String, dynamic>{
-        'page': page,
-        'limit': limit,
-      };
+      final queryParams = <String, dynamic>{'page': page, 'limit': limit};
       if (status != null) queryParams['status'] = status;
 
       _logger.d('Fetching events with params: $queryParams');
@@ -273,9 +286,14 @@ class VolunteerApiService {
 
   // Record attendance
   Future<void> recordAttendance(
-      int eventId, int volunteerId, bool attended) async {
+    int eventId,
+    int volunteerId,
+    bool attended,
+  ) async {
     try {
-      _logger.d('Recording attendance for event $eventId, volunteer $volunteerId: $attended');
+      _logger.d(
+        'Recording attendance for event $eventId, volunteer $volunteerId: $attended',
+      );
 
       await _dio.post(
         '${ApiConstants.events}/$eventId/attendance',

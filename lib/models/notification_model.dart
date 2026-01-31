@@ -67,11 +67,7 @@ class TargetAudience {
   final List<String>? organizationLevels;
   final List<int>? specificUsers;
 
-  TargetAudience({
-    this.roles,
-    this.organizationLevels,
-    this.specificUsers,
-  });
+  TargetAudience({this.roles, this.organizationLevels, this.specificUsers});
 
   factory TargetAudience.fromJson(Map<String, dynamic> json) =>
       _$TargetAudienceFromJson(json);
@@ -84,10 +80,7 @@ class ReadReceipt {
   final int userId;
   final DateTime readAt;
 
-  ReadReceipt({
-    required this.userId,
-    required this.readAt,
-  });
+  ReadReceipt({required this.userId, required this.readAt});
 
   factory ReadReceipt.fromJson(Map<String, dynamic> json) =>
       _$ReadReceiptFromJson(json);

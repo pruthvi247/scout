@@ -172,3 +172,56 @@ final userActivitiesProvider =
       final userApiService = ref.watch(userApiServiceProvider);
       return UserActivitiesNotifier(userApiService, userId);
     });
+
+/// State for member detail
+class MemberDetailState {
+  final User? member;
+  final bool isLoading;
+  final String? error;
+
+  MemberDetailState({this.member, this.isLoading = false, this.error});
+
+  MemberDetailState copyWith({User? member, bool? isLoading, String? error}) {
+    return MemberDetailState(
+      member: member ?? this.member,
+      isLoading: isLoading ?? this.isLoading,
+      error: error,
+    );
+  }
+}
+
+/// Member detail notifier
+class MemberDetailNotifier extends StateNotifier<MemberDetailState> {
+  final UserApiService _userApiService;
+  final int memberId;
+
+  MemberDetailNotifier(this._userApiService, this.memberId)
+    : super(MemberDetailState(isLoading: true)) {
+    loadMember();
+  }
+
+  Future<void> loadMember() async {
+    state = state.copyWith(isLoading: true, error: null);
+
+    try {
+      final member = await _userApiService.getUserById(memberId);
+      state = MemberDetailState(member: member, isLoading: false);
+    } catch (e) {
+      state = MemberDetailState(isLoading: false, error: e.toString());
+    }
+  }
+
+  Future<void> refresh() async {
+    await loadMember();
+  }
+}
+
+/// Provider for member detail
+final memberDetailProvider =
+    StateNotifierProvider.family<MemberDetailNotifier, MemberDetailState, int>((
+      ref,
+      memberId,
+    ) {
+      final userApiService = ref.watch(userApiServiceProvider);
+      return MemberDetailNotifier(userApiService, memberId);
+    });

@@ -55,10 +55,7 @@ class VolunteersListNotifier extends StateNotifier<VolunteersListState> {
         isLoading: false,
       );
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 
@@ -83,10 +80,7 @@ class VolunteersListNotifier extends StateNotifier<VolunteersListState> {
         isLoading: false,
       );
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 
@@ -127,7 +121,7 @@ class VolunteerAssignmentsNotifier
   final int volunteerId;
 
   VolunteerAssignmentsNotifier(this._apiService, this.volunteerId)
-      : super(VolunteerAssignmentsState());
+    : super(VolunteerAssignmentsState());
 
   Future<void> loadAssignments() async {
     state = state.copyWith(isLoading: true, error: null);
@@ -135,26 +129,17 @@ class VolunteerAssignmentsNotifier
     try {
       final assignments = await _apiService.getAssignments(volunteerId);
 
-      state = state.copyWith(
-        assignments: assignments,
-        isLoading: false,
-      );
+      state = state.copyWith(assignments: assignments, isLoading: false);
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 
-  Future<void> updateAssignmentStatus(
-      int assignmentId, String status) async {
+  Future<void> updateAssignmentStatus(int assignmentId, String status) async {
     try {
-      await _apiService.updateAssignment(
-        volunteerId,
-        assignmentId,
-        {'status': status},
-      );
+      await _apiService.updateAssignment(volunteerId, assignmentId, {
+        'status': status,
+      });
 
       // Reload assignments
       await loadAssignments();
@@ -218,10 +203,7 @@ class EventsListNotifier extends StateNotifier<EventsListState> {
         isLoading: false,
       );
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 
@@ -237,10 +219,7 @@ class EventsListNotifier extends StateNotifier<EventsListState> {
         page: nextPage,
       );
 
-      final newEvents = [
-        ...state.events,
-        ...result['events'] as List<Event>,
-      ];
+      final newEvents = [...state.events, ...result['events'] as List<Event>];
 
       state = state.copyWith(
         events: newEvents,
@@ -249,10 +228,7 @@ class EventsListNotifier extends StateNotifier<EventsListState> {
         isLoading: false,
       );
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 
@@ -270,26 +246,28 @@ final volunteerApiServiceProvider = Provider<VolunteerApiService>((ref) {
 // Providers
 final volunteersListProvider =
     StateNotifierProvider<VolunteersListNotifier, VolunteersListState>((ref) {
-  final apiService = ref.watch(volunteerApiServiceProvider);
-  final notifier = VolunteersListNotifier(apiService);
-  notifier.loadVolunteers(); // Auto-load on first access
-  return notifier;
-});
+      final apiService = ref.watch(volunteerApiServiceProvider);
+      final notifier = VolunteersListNotifier(apiService);
+      notifier.loadVolunteers(); // Auto-load on first access
+      return notifier;
+    });
 
-final volunteerAssignmentsProvider = StateNotifierProvider.family<
-    VolunteerAssignmentsNotifier,
-    VolunteerAssignmentsState,
-    int>((ref, volunteerId) {
-  final apiService = ref.watch(volunteerApiServiceProvider);
-  final notifier = VolunteerAssignmentsNotifier(apiService, volunteerId);
-  notifier.loadAssignments(); // Auto-load on first access
-  return notifier;
-});
+final volunteerAssignmentsProvider =
+    StateNotifierProvider.family<
+      VolunteerAssignmentsNotifier,
+      VolunteerAssignmentsState,
+      int
+    >((ref, volunteerId) {
+      final apiService = ref.watch(volunteerApiServiceProvider);
+      final notifier = VolunteerAssignmentsNotifier(apiService, volunteerId);
+      notifier.loadAssignments(); // Auto-load on first access
+      return notifier;
+    });
 
 final eventsListProvider =
     StateNotifierProvider<EventsListNotifier, EventsListState>((ref) {
-  final apiService = ref.watch(volunteerApiServiceProvider);
-  final notifier = EventsListNotifier(apiService);
-  notifier.loadEvents(); // Auto-load on first access
-  return notifier;
-});
+      final apiService = ref.watch(volunteerApiServiceProvider);
+      final notifier = EventsListNotifier(apiService);
+      notifier.loadEvents(); // Auto-load on first access
+      return notifier;
+    });

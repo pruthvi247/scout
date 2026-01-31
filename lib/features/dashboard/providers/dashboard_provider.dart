@@ -9,11 +9,7 @@ class DashboardStatsState {
   final bool isLoading;
   final String? error;
 
-  DashboardStatsState({
-    this.stats,
-    this.isLoading = false,
-    this.error,
-  });
+  DashboardStatsState({this.stats, this.isLoading = false, this.error});
 
   DashboardStatsState copyWith({
     DashboardStats? stats,
@@ -48,15 +44,9 @@ class DashboardStatsNotifier extends StateNotifier<DashboardStatsState> {
         endDate: endDate,
       );
 
-      state = state.copyWith(
-        stats: stats,
-        isLoading: false,
-      );
+      state = state.copyWith(stats: stats, isLoading: false);
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 
@@ -79,11 +69,7 @@ class MemberStatsState {
   final bool isLoading;
   final String? error;
 
-  MemberStatsState({
-    this.stats,
-    this.isLoading = false,
-    this.error,
-  });
+  MemberStatsState({this.stats, this.isLoading = false, this.error});
 
   MemberStatsState copyWith({
     MemberStats? stats,
@@ -104,10 +90,7 @@ class MemberStatsNotifier extends StateNotifier<MemberStatsState> {
 
   MemberStatsNotifier(this._apiService) : super(MemberStatsState());
 
-  Future<void> loadStats({
-    String? organizationLevel,
-    String? role,
-  }) async {
+  Future<void> loadStats({String? organizationLevel, String? role}) async {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
@@ -116,15 +99,9 @@ class MemberStatsNotifier extends StateNotifier<MemberStatsState> {
         role: role,
       );
 
-      state = state.copyWith(
-        stats: stats,
-        isLoading: false,
-      );
+      state = state.copyWith(stats: stats, isLoading: false);
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 }
@@ -135,11 +112,7 @@ class EngagementMetricsState {
   final bool isLoading;
   final String? error;
 
-  EngagementMetricsState({
-    this.metrics,
-    this.isLoading = false,
-    this.error,
-  });
+  EngagementMetricsState({this.metrics, this.isLoading = false, this.error});
 
   EngagementMetricsState copyWith({
     EngagementMetrics? metrics,
@@ -158,8 +131,7 @@ class EngagementMetricsState {
 class EngagementMetricsNotifier extends StateNotifier<EngagementMetricsState> {
   final DashboardApiService _apiService;
 
-  EngagementMetricsNotifier(this._apiService)
-      : super(EngagementMetricsState());
+  EngagementMetricsNotifier(this._apiService) : super(EngagementMetricsState());
 
   Future<void> loadMetrics({
     String? organizationLevel,
@@ -175,15 +147,9 @@ class EngagementMetricsNotifier extends StateNotifier<EngagementMetricsState> {
         endDate: endDate,
       );
 
-      state = state.copyWith(
-        metrics: metrics,
-        isLoading: false,
-      );
+      state = state.copyWith(metrics: metrics, isLoading: false);
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 }
@@ -197,25 +163,26 @@ final dashboardApiServiceProvider = Provider<DashboardApiService>((ref) {
 // Providers
 final dashboardStatsProvider =
     StateNotifierProvider<DashboardStatsNotifier, DashboardStatsState>((ref) {
-  final apiService = ref.watch(dashboardApiServiceProvider);
-  final notifier = DashboardStatsNotifier(apiService);
-  notifier.loadStats(); // Auto-load on first access
-  return notifier;
-});
+      final apiService = ref.watch(dashboardApiServiceProvider);
+      final notifier = DashboardStatsNotifier(apiService);
+      notifier.loadStats(); // Auto-load on first access
+      return notifier;
+    });
 
 final memberStatsProvider =
     StateNotifierProvider<MemberStatsNotifier, MemberStatsState>((ref) {
-  final apiService = ref.watch(dashboardApiServiceProvider);
-  final notifier = MemberStatsNotifier(apiService);
-  notifier.loadStats(); // Auto-load on first access
-  return notifier;
-});
+      final apiService = ref.watch(dashboardApiServiceProvider);
+      final notifier = MemberStatsNotifier(apiService);
+      notifier.loadStats(); // Auto-load on first access
+      return notifier;
+    });
 
 final engagementMetricsProvider =
-    StateNotifierProvider<EngagementMetricsNotifier, EngagementMetricsState>(
-        (ref) {
-  final apiService = ref.watch(dashboardApiServiceProvider);
-  final notifier = EngagementMetricsNotifier(apiService);
-  notifier.loadMetrics(); // Auto-load on first access
-  return notifier;
-});
+    StateNotifierProvider<EngagementMetricsNotifier, EngagementMetricsState>((
+      ref,
+    ) {
+      final apiService = ref.watch(dashboardApiServiceProvider);
+      final notifier = EngagementMetricsNotifier(apiService);
+      notifier.loadMetrics(); // Auto-load on first access
+      return notifier;
+    });

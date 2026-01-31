@@ -72,6 +72,34 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
   }
 
   Widget _buildBody(NotificationsListState state) {
+    // TODO: Backend notification API not implemented yet
+    // Show coming soon message
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.notifications_outlined,
+            size: 80,
+            color: Theme.of(context).colorScheme.primary.withOpacity(0.5),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            'Notifications Coming Soon',
+            style: Theme.of(context).textTheme.headlineSmall,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Backend API not yet implemented',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    /* Original implementation - restore when backend is ready
     if (state.isLoading && state.notifications.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -146,6 +174,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
         );
       },
     );
+    */
   }
 
   void _onNotificationTap(NotificationModel notification) {

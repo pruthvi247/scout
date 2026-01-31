@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../models/organization_model.dart';
 import '../providers/organization_provider.dart';
 
@@ -61,6 +62,20 @@ class OrganizationScreen extends ConsumerWidget {
       return const Center(child: Text('No organization data available'));
     }
 
+    final roots = state.tree!.roots;
+    if (roots.isEmpty) {
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.account_tree_outlined, size: 64, color: Colors.grey),
+            SizedBox(height: 16),
+            Text('No organization nodes found'),
+          ],
+        ),
+      );
+    }
+
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -93,7 +108,8 @@ class OrganizationScreen extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 16),
-        _OrganizationNodeTile(node: state.tree!.root),
+        // Display all root nodes
+        ...roots.map((root) => _OrganizationNodeTile(node: root)),
       ],
     );
   }
@@ -117,42 +133,90 @@ class _OrganizationNodeTileState extends State<_OrganizationNodeTile> {
     final hasChildren =
         widget.node.children != null && widget.node.children!.isNotEmpty;
 
-    return Card(
-      margin: EdgeInsets.only(left: widget.indent * 24.0, bottom: 8),
-      child: Column(
-        children: [
-          ListTile(
-            leading: Icon(
-              _getNodeIcon(widget.node.type),
-              color: Theme.of(context).colorScheme.primary,
-            ),
-            title: Text(
-              widget.node.name,
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            subtitle: Text(
-              '${widget.node.type.toUpperCase()} • ${widget.node.memberCount} members',
-            ),
-            trailing: hasChildren
-                ? IconButton(
-                    icon: Icon(
-                      _isExpanded ? Icons.expand_less : Icons.expand_more,
+    return Padding(
+      padding: EdgeInsets.only(left: widget.indent * 16.0, bottom: 8),
+      child: Card(
+        child: Column(
+          children: [
+            ListTile(
+              leading: Icon(
+                _getNodeIcon(widget.node.type),
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              title: Text(
+                widget.node.name,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${widget.node.type.toUpperCase()} • ${widget.node.memberCount} members',
+                  ),
+                  if (widget.node.activitySummary != null &&
+                      widget.node.activitySummary!.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text(
+                        'Activities: ${_getActivitySummaryText(widget.node.activitySummary!)}',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.secondary,
+                        ),
+                      ),
                     ),
-                    onPressed: () {
-                      setState(() {
-                        _isExpanded = !_isExpanded;
-                      });
-                    },
-                  )
-                : null,
-          ),
-          if (_isExpanded && hasChildren)
-            ...widget.node.children!.map(
-              (child) =>
-                  _OrganizationNodeTile(node: child, indent: widget.indent + 1),
+                ],
+              ),
+              trailing: SizedBox(
+                width: hasChildren && widget.node.memberCount > 0 ? 96 : 48,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    if (widget.node.memberCount > 0)
+                      IconButton(
+                        icon: const Icon(Icons.people),
+                        tooltip: 'View Members',
+                        onPressed: () => _showNodeMembers(context),
+                      ),
+                    if (hasChildren)
+                      IconButton(
+                        icon: Icon(
+                          _isExpanded ? Icons.expand_less : Icons.expand_more,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _isExpanded = !_isExpanded;
+                          });
+                        },
+                      ),
+                  ],
+                ),
+              ),
             ),
-        ],
+            if (_isExpanded && hasChildren)
+              ...widget.node.children!.map(
+                (child) => _OrganizationNodeTile(
+                  node: child,
+                  indent: widget.indent + 1,
+                ),
+              ),
+          ],
+        ),
       ),
+    );
+  }
+
+  String _getActivitySummaryText(Map<String, dynamic> summary) {
+    final total = summary['total'] ?? 0;
+    final verified = summary['verified'] ?? 0;
+    final pending = summary['pending'] ?? 0;
+    return '$total total ($verified verified, $pending pending)';
+  }
+
+  void _showNodeMembers(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => _NodeMembersDialog(node: widget.node),
     );
   }
 
@@ -173,5 +237,113 @@ class _OrganizationNodeTileState extends State<_OrganizationNodeTile> {
       default:
         return Icons.folder;
     }
+  }
+}
+
+class _NodeMembersDialog extends ConsumerWidget {
+  final OrganizationNode node;
+
+  const _NodeMembersDialog({required this.node});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final membersState = ref.watch(nodeMembersProvider(node.id));
+
+    return Dialog(
+      child: Container(
+        constraints: const BoxConstraints(maxWidth: 600, maxHeight: 500),
+        child: Column(
+          children: [
+            AppBar(
+              title: Text('Members - ${node.name}'),
+              automaticallyImplyLeading: false,
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ],
+            ),
+            Expanded(child: _buildMembersBody(context, membersState)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMembersBody(BuildContext context, NodeMembersState state) {
+    if (state.isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (state.error != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.error_outline,
+              size: 48,
+              color: Theme.of(context).colorScheme.error,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Error loading members',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              state.error!,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (state.members.isEmpty) {
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.people_outline, size: 48),
+            SizedBox(height: 16),
+            Text('No members assigned to this node'),
+          ],
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: state.members.length,
+      itemBuilder: (context, index) {
+        final member = state.members[index];
+        return Card(
+          margin: const EdgeInsets.only(bottom: 8),
+          child: ListTile(
+            leading: CircleAvatar(
+              child: Text(member.fullName[0].toUpperCase()),
+            ),
+            title: Text(member.fullName),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(member.role.toUpperCase()),
+                if (member.email.isNotEmpty) Text(member.email),
+              ],
+            ),
+            trailing: IconButton(
+              icon: const Icon(Icons.arrow_forward),
+              onPressed: () {
+                Navigator.of(context).pop();
+                context.push('/members/${member.id}');
+              },
+            ),
+          ),
+        );
+      },
+    );
   }
 }

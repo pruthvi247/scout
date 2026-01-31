@@ -20,6 +20,9 @@ OrganizationNode _$OrganizationNodeFromJson(Map<String, dynamic> json) =>
       isActive: json['is_active'] as bool,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
+      children: (json['children'] as List<dynamic>?)
+          ?.map((e) => OrganizationNode.fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
 
 Map<String, dynamic> _$OrganizationNodeToJson(OrganizationNode instance) =>
@@ -36,16 +39,5 @@ Map<String, dynamic> _$OrganizationNodeToJson(OrganizationNode instance) =>
       'is_active': instance.isActive,
       'created_at': instance.createdAt.toIso8601String(),
       'updated_at': instance.updatedAt.toIso8601String(),
-    };
-
-OrganizationTree _$OrganizationTreeFromJson(Map<String, dynamic> json) =>
-    OrganizationTree(
-      root: OrganizationNode.fromJson(json['root'] as Map<String, dynamic>),
-      totalNodes: (json['total_nodes'] as num).toInt(),
-    );
-
-Map<String, dynamic> _$OrganizationTreeToJson(OrganizationTree instance) =>
-    <String, dynamic>{
-      'root': instance.root.toJson(),
-      'total_nodes': instance.totalNodes,
+      'children': instance.children?.map((e) => e.toJson()).toList(),
     };

@@ -88,6 +88,9 @@ class _CreateActivityScreenState extends ConsumerState<CreateActivityScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Activity created successfully!')),
         );
+        // Invalidate activity providers to refresh the lists
+        ref.invalidate(myActivitiesProvider);
+        ref.invalidate(allActivitiesProvider);
         context.pop();
       }
     });

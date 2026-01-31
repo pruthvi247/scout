@@ -553,14 +553,33 @@ class ActivityDetailScreen extends ConsumerWidget {
     );
 
     if (confirmed == true && context.mounted) {
-      await ref
-          .read(activityDetailProvider(activityId).notifier)
-          .verifyActivity();
+      try {
+        await ref
+            .read(activityDetailProvider(activityId).notifier)
+            .verifyActivity();
 
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Activity verified successfully')),
-        );
+        // Refresh all activity lists to show updated status
+        ref.invalidate(allActivitiesProvider);
+        ref.invalidate(myActivitiesProvider);
+        ref.invalidate(pendingActivitiesProvider);
+
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Activity verified successfully'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to verify activity: ${e.toString()}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       }
     }
   }
@@ -594,14 +613,33 @@ class ActivityDetailScreen extends ConsumerWidget {
     );
 
     if (confirmed == true && context.mounted) {
-      await ref
-          .read(activityDetailProvider(activityId).notifier)
-          .rejectActivity(reasonController.text);
+      try {
+        await ref
+            .read(activityDetailProvider(activityId).notifier)
+            .rejectActivity(reasonController.text);
 
-      if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Activity rejected')));
+        // Refresh all activity lists to show updated status
+        ref.invalidate(allActivitiesProvider);
+        ref.invalidate(myActivitiesProvider);
+        ref.invalidate(pendingActivitiesProvider);
+
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Activity rejected'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to reject activity: ${e.toString()}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       }
     }
   }

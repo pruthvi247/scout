@@ -42,69 +42,40 @@ class NotificationsListNotifier extends StateNotifier<NotificationsListState> {
   String? _typeFilter;
   String? _statusFilter;
 
-  NotificationsListNotifier(this._apiService)
-      : super(NotificationsListState());
+  NotificationsListNotifier(this._apiService) : super(NotificationsListState());
 
-  Future<void> loadNotifications({
-    String? type,
-    String? status,
-  }) async {
+  Future<void> loadNotifications({String? type, String? status}) async {
     _typeFilter = type;
     _statusFilter = status;
 
     state = state.copyWith(isLoading: true, error: null);
 
     try {
-      final result = await _apiService.getNotifications(
-        type: type,
-        status: status,
-        page: 1,
-      );
+      // TODO: Backend notification API not implemented yet
+      // Returning empty list for now
+      // final result = await _apiService.getNotifications(
+      //   type: type,
+      //   status: status,
+      //   page: 1,
+      // );
 
       state = state.copyWith(
-        notifications: result['notifications'] as List<NotificationModel>,
-        hasMore: result['hasMore'] as bool,
+        notifications: [], // Empty list until backend is ready
+        hasMore: false,
         currentPage: 1,
         isLoading: false,
       );
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 
   Future<void> loadMore() async {
     if (state.isLoading || !state.hasMore) return;
 
-    final nextPage = state.currentPage + 1;
-    state = state.copyWith(isLoading: true);
-
-    try {
-      final result = await _apiService.getNotifications(
-        type: _typeFilter,
-        status: _statusFilter,
-        page: nextPage,
-      );
-
-      final newNotifications = [
-        ...state.notifications,
-        ...result['notifications'] as List<NotificationModel>,
-      ];
-
-      state = state.copyWith(
-        notifications: newNotifications,
-        hasMore: result['hasMore'] as bool,
-        currentPage: nextPage,
-        isLoading: false,
-      );
-    } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
-    }
+    // TODO: Backend notification API not implemented yet
+    // No-op for now
+    return;
   }
 
   Future<void> refresh() async {
@@ -112,21 +83,9 @@ class NotificationsListNotifier extends StateNotifier<NotificationsListState> {
   }
 
   Future<void> markAsRead(int notificationId) async {
-    try {
-      await _apiService.markAsRead(notificationId);
-
-      // Update local state
-      final updatedNotifications = state.notifications.map((notification) {
-        if (notification.id == notificationId) {
-          return notification.copyWith(isRead: true);
-        }
-        return notification;
-      }).toList();
-
-      state = state.copyWith(notifications: updatedNotifications);
-    } catch (e) {
-      // Handle error silently or show toast
-    }
+    // TODO: Backend notification API not implemented yet
+    // No-op for now
+    return;
   }
 }
 
@@ -135,15 +94,9 @@ class UnreadCountState {
   final int count;
   final bool isLoading;
 
-  UnreadCountState({
-    this.count = 0,
-    this.isLoading = false,
-  });
+  UnreadCountState({this.count = 0, this.isLoading = false});
 
-  UnreadCountState copyWith({
-    int? count,
-    bool? isLoading,
-  }) {
+  UnreadCountState copyWith({int? count, bool? isLoading}) {
     return UnreadCountState(
       count: count ?? this.count,
       isLoading: isLoading ?? this.isLoading,
@@ -158,14 +111,9 @@ class UnreadCountNotifier extends StateNotifier<UnreadCountState> {
   UnreadCountNotifier(this._apiService) : super(UnreadCountState());
 
   Future<void> loadUnreadCount() async {
-    state = state.copyWith(isLoading: true);
-
-    try {
-      final count = await _apiService.getUnreadCount();
-      state = state.copyWith(count: count, isLoading: false);
-    } catch (e) {
-      state = state.copyWith(isLoading: false);
-    }
+    // TODO: Backend notification API not implemented yet
+    // Returning 0 count for now
+    state = state.copyWith(count: 0, isLoading: false);
   }
 
   void decrementCount() {
@@ -176,25 +124,28 @@ class UnreadCountNotifier extends StateNotifier<UnreadCountState> {
 }
 
 // API Service Provider
-final notificationApiServiceProvider =
-    Provider<NotificationApiService>((ref) {
+final notificationApiServiceProvider = Provider<NotificationApiService>((ref) {
   final dio = ref.watch(dioProvider);
   return NotificationApiService(dio);
 });
 
 // Providers
-final notificationsListProvider = StateNotifierProvider<
-    NotificationsListNotifier, NotificationsListState>((ref) {
-  final apiService = ref.watch(notificationApiServiceProvider);
-  final notifier = NotificationsListNotifier(apiService);
-  notifier.loadNotifications(); // Auto-load on first access
-  return notifier;
-});
+final notificationsListProvider =
+    StateNotifierProvider<NotificationsListNotifier, NotificationsListState>((
+      ref,
+    ) {
+      final apiService = ref.watch(notificationApiServiceProvider);
+      final notifier = NotificationsListNotifier(apiService);
+      // TODO: Auto-load disabled until backend API is ready
+      // notifier.loadNotifications();
+      return notifier;
+    });
 
 final unreadCountProvider =
     StateNotifierProvider<UnreadCountNotifier, UnreadCountState>((ref) {
-  final apiService = ref.watch(notificationApiServiceProvider);
-  final notifier = UnreadCountNotifier(apiService);
-  notifier.loadUnreadCount(); // Auto-load on first access
-  return notifier;
-});
+      final apiService = ref.watch(notificationApiServiceProvider);
+      final notifier = UnreadCountNotifier(apiService);
+      // TODO: Auto-load disabled until backend API is ready
+      // notifier.loadUnreadCount();
+      return notifier;
+    });

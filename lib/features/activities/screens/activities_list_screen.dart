@@ -6,6 +6,7 @@ import '../../../core/constants/enums.dart';
 import '../../../models/activity_model.dart';
 import '../providers/activity_provider.dart';
 import '../../../routes/app_router.dart';
+import '../../auth/providers/auth_provider.dart';
 
 class ActivitiesListScreen extends ConsumerStatefulWidget {
   final bool showOnlyMyActivities;
@@ -197,112 +198,292 @@ class _ActivitiesListScreenState extends ConsumerState<ActivitiesListScreen> {
   }
 }
 
-class ActivityCard extends StatelessWidget {
+class ActivityCard extends ConsumerWidget {
   final Activity activity;
   final VoidCallback onTap;
 
   const ActivityCard({super.key, required this.activity, required this.onTap});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final status = ActivityStatus.fromString(activity.status);
     final theme = Theme.of(context);
+    final currentUser = ref.watch(currentUserProvider);
+    final canApprove =
+        currentUser != null &&
+        (currentUser.role == 'admin' || currentUser.role == 'incharge') &&
+        status == ActivityStatus.pending;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: Text(
-                      activity.title,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  _buildStatusBadge(status, theme),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Text(
-                activity.description,
-                style: theme.textTheme.bodyMedium,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 16,
-                runSpacing: 8,
-                children: [
-                  _buildInfoChip(
-                    icon: Icons.event,
-                    label: DateFormat(
-                      'MMM dd, yyyy',
-                    ).format(activity.checkInTime),
-                    theme: theme,
-                  ),
-                  _buildInfoChip(
-                    icon: Icons.access_time,
-                    label: DateFormat('hh:mm a').format(activity.checkInTime),
-                    theme: theme,
-                  ),
-                  _buildInfoChip(
-                    icon: Icons.location_on,
-                    label: activity.location.address,
-                    theme: theme,
-                  ),
-                ],
-              ),
-              if (activity.tags != null && activity.tags!.isNotEmpty) ...[
-                const SizedBox(height: 12),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: activity.tags!
-                      .take(3)
-                      .map(
-                        (tag) => Chip(
-                          label: Text(tag),
-                          visualDensity: VisualDensity.compact,
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          activity.title,
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      )
-                      .toList(),
+                      ),
+                      _buildStatusBadge(status, theme),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    activity.description,
+                    style: theme.textTheme.bodyMedium,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 16,
+                    runSpacing: 8,
+                    children: [
+                      _buildInfoChip(
+                        icon: Icons.event,
+                        label: DateFormat(
+                          'MMM dd, yyyy',
+                        ).format(activity.checkInTime),
+                        theme: theme,
+                      ),
+                      _buildInfoChip(
+                        icon: Icons.access_time,
+                        label: DateFormat(
+                          'hh:mm a',
+                        ).format(activity.checkInTime),
+                        theme: theme,
+                      ),
+                      _buildInfoChip(
+                        icon: Icons.location_on,
+                        label: activity.location.address,
+                        theme: theme,
+                      ),
+                    ],
+                  ),
+                  if (activity.tags != null && activity.tags!.isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: activity.tags!
+                          .take(3)
+                          .map(
+                            (tag) => Chip(
+                              label: Text(tag),
+                              visualDensity: VisualDensity.compact,
+                            ),
+                          )
+                          .toList(),
+                    ),
+                  ],
+                  if (activity.mediaFiles != null &&
+                      activity.mediaFiles!.isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.photo_library,
+                          size: 16,
+                          color: theme.colorScheme.primary,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${activity.mediaFiles!.length} photo(s)',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.primary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            if (canApprove)
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.orange.shade50,
+                  border: Border(
+                    top: BorderSide(color: Colors.orange.shade200),
+                  ),
                 ),
-              ],
-              if (activity.mediaFiles != null &&
-                  activity.mediaFiles!.isNotEmpty) ...[
-                const SizedBox(height: 12),
-                Row(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                child: Row(
                   children: [
                     Icon(
-                      Icons.photo_library,
+                      Icons.pending_actions,
                       size: 16,
-                      color: theme.colorScheme.primary,
+                      color: Colors.orange.shade700,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Awaiting approval',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: Colors.orange.shade900,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                    TextButton.icon(
+                      onPressed: () => _quickApprove(context, ref),
+                      icon: const Icon(Icons.check_circle, size: 18),
+                      label: const Text('Approve'),
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.green,
+                        visualDensity: VisualDensity.compact,
+                      ),
                     ),
                     const SizedBox(width: 4),
-                    Text(
-                      '${activity.mediaFiles!.length} photo(s)',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.primary,
+                    TextButton.icon(
+                      onPressed: () => _quickReject(context, ref),
+                      icon: const Icon(Icons.cancel, size: 18),
+                      label: const Text('Reject'),
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.red,
+                        visualDensity: VisualDensity.compact,
                       ),
                     ),
                   ],
                 ),
-              ],
-            ],
-          ),
+              ),
+          ],
         ),
       ),
     );
+  }
+
+  Future<void> _quickApprove(BuildContext context, WidgetRef ref) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Approve Activity'),
+        content: Text('Approve "${activity.title}"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: FilledButton.styleFrom(backgroundColor: Colors.green),
+            child: const Text('Approve'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && context.mounted) {
+      try {
+        await ref
+            .read(activityDetailProvider(activity.id).notifier)
+            .verifyActivity();
+
+        ref.invalidate(allActivitiesProvider);
+        ref.invalidate(myActivitiesProvider);
+        ref.invalidate(pendingActivitiesProvider);
+
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Activity approved'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed: ${e.toString()}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    }
+  }
+
+  Future<void> _quickReject(BuildContext context, WidgetRef ref) async {
+    final reasonController = TextEditingController();
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Reject Activity'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Reject "${activity.title}"?'),
+            const SizedBox(height: 16),
+            TextField(
+              controller: reasonController,
+              decoration: const InputDecoration(
+                labelText: 'Reason for rejection',
+                border: OutlineInputBorder(),
+              ),
+              maxLines: 3,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('Reject'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && context.mounted) {
+      try {
+        await ref
+            .read(activityDetailProvider(activity.id).notifier)
+            .rejectActivity(reasonController.text);
+
+        ref.invalidate(allActivitiesProvider);
+        ref.invalidate(myActivitiesProvider);
+        ref.invalidate(pendingActivitiesProvider);
+
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Activity rejected'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed: ${e.toString()}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    }
   }
 
   Widget _buildStatusBadge(ActivityStatus status, ThemeData theme) {

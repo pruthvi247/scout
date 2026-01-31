@@ -44,11 +44,7 @@ class ActivityTrend {
   final int count;
   final String? type;
 
-  ActivityTrend({
-    required this.date,
-    required this.count,
-    this.type,
-  });
+  ActivityTrend({required this.date, required this.count, this.type});
 
   factory ActivityTrend.fromJson(Map<String, dynamic> json) =>
       _$ActivityTrendFromJson(json);

@@ -17,10 +17,7 @@ class NotificationApiService {
     int limit = 20,
   }) async {
     try {
-      final queryParams = <String, dynamic>{
-        'page': page,
-        'limit': limit,
-      };
+      final queryParams = <String, dynamic>{'page': page, 'limit': limit};
       if (type != null) queryParams['type'] = type;
       if (status != null) queryParams['status'] = status;
 
@@ -63,7 +60,8 @@ class NotificationApiService {
 
   // Create notification
   Future<NotificationModel> createNotification(
-      CreateNotificationRequest request) async {
+    CreateNotificationRequest request,
+  ) async {
     try {
       _logger.d('Creating notification: ${request.toJson()}');
 
@@ -82,7 +80,9 @@ class NotificationApiService {
 
   // Update notification
   Future<NotificationModel> updateNotification(
-      int id, Map<String, dynamic> updates) async {
+    int id,
+    Map<String, dynamic> updates,
+  ) async {
     try {
       _logger.d('Updating notification $id: $updates');
 
