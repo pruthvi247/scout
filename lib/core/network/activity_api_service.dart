@@ -17,12 +17,12 @@ class ActivityApiService {
       final requestData = request.toJson();
       appLogger.info('Creating activity: ${request.title}', tag: 'ActivityAPI');
       appLogger.debug('Request data', tag: 'ActivityAPI', data: requestData);
-      
+
       final response = await _dio.post(
         ApiConstants.activities,
         data: requestData,
       );
-      
+
       appLogger.info('Activity created successfully', tag: 'ActivityAPI');
       return Activity.fromJson(response.data);
     } on DioException catch (e) {
@@ -31,6 +31,11 @@ class ActivityApiService {
         tag: 'ActivityAPI',
         error: e,
         stackTrace: e.stackTrace,
+      );
+      throw _handleError(e);
+    }
+  }
+
   /// Get list of activities with optional filters
   Future<List<Activity>> getActivities({
     String? status,
@@ -69,7 +74,7 @@ class ActivityApiService {
         queryParameters: queryParams,
       );
 
-      final activities = (response.data as List)
+      final activities = (response.data['items'] as List)
           .map((json) => Activity.fromJson(json))
           .toList();
 
@@ -77,7 +82,7 @@ class ActivityApiService {
         'Fetched ${activities.length} activities',
         tag: 'ActivityAPI',
       );
-      
+
       return activities;
     } on DioException catch (e) {
       appLogger.error(
@@ -95,19 +100,6 @@ class ActivityApiService {
         stackTrace: stackTrace,
       );
       rethrow;
-    }
-  }   final response = await _dio.get(
-        ApiConstants.activities,
-        queryParameters: queryParams,
-      );
-
-      _logger.i('Fetched ${response.data.length} activities');
-      return (response.data as List)
-          .map((json) => Activity.fromJson(json))
-          .toList();
-    } on DioException catch (e) {
-      _logger.e('Failed to fetch activities: ${e.message}');
-      throw _handleError(e);
     }
   }
 
@@ -209,17 +201,14 @@ class ActivityApiService {
     if (e.response != null) {
       final data = e.response!.data;
 
-      // Try to extract detailed error message
       if (data is Map && data.containsKey('detail')) {
         final detail = data['detail'];
-        // Handle FastAPI validation errors
         if (detail is List) {
           return detail.map((e) => e['msg'] ?? e.toString()).join(', ');
         }
         return detail.toString();
       }
 
-      // If it's a string response (like "Internal Server Error")
       if (data is String) {
         return 'Server error (${e.response!.statusCode}): $data';
       }

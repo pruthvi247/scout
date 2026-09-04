@@ -151,7 +151,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         appLogger.warning(
           'Logout API call failed, continuing with local cleanup',
           tag: 'AuthProvider',
-          error: e,
+          data: e,
         );
         // Continue with local cleanup even if API call fails
       }

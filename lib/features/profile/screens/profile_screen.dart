@@ -87,7 +87,7 @@ class ProfileScreen extends ConsumerWidget {
               _InfoRow(
                 icon: Icons.person_outline,
                 label: 'Username',
-                value: user.username,
+                value: user.phone ?? 'N/A',
               ),
               _InfoRow(
                 icon: Icons.email_outlined,

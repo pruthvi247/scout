@@ -5,7 +5,7 @@ part 'user_model.g.dart';
 @JsonSerializable()
 class User {
   final int id;
-  final String username;
+  final String? username;
   final String email;
   final String? phone;
   @JsonKey(name: 'full_name')
@@ -34,7 +34,7 @@ class User {
 
   User({
     required this.id,
-    required this.username,
+    this.username,
     required this.email,
     this.phone,
     required this.fullName,

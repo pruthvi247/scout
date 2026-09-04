@@ -205,9 +205,14 @@ class MemberDetailScreen extends ConsumerWidget {
               ],
             ),
             const Divider(height: 24),
-            _buildInfoRow(Icons.badge, 'Username', member.username, theme),
+            _buildInfoRow(
+              Icons.badge,
+              'Username',
+              member.phone ?? 'N/A',
+              theme,
+            ),
             const SizedBox(height: 12),
-            _buildInfoRow(Icons.email, 'Email', member.email, theme),
+            _buildInfoRow(Icons.email, 'Email', member.email ?? 'N/A', theme),
             if (member.phone != null) ...[
               const SizedBox(height: 12),
               _buildInfoRow(Icons.phone, 'Phone', member.phone!, theme),

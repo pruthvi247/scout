@@ -14,7 +14,7 @@ class AppConfig {
   /// - macOS/Linux: Run `ifconfig` or `ip addr show`
   /// - Windows: Run `ipconfig`
   /// Look for IPv4 address (e.g., 192.168.1.x or 10.0.0.x)
-  static const String physicalDevice = 'http://192.168.1.5:8000';
+  static const String physicalDevice = 'http://192.168.1.3:8000';
 
   /// Production API URL
   static const String production = 'https://api.scoutpms.com';
