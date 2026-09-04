@@ -248,7 +248,7 @@ Manager Review
           ↓
 Approved / Rejected / NeedInfo
           ↓
-Completed
+Completed (Total Hours Tracking)
 ```
 
 ## 7. Real Time Updates
@@ -280,6 +280,101 @@ Optional proof
 6. Documents
 
 Reports Invoices Lists etc.
+
+### Self-Initiated Activities
+
+Most task systems only track assigned work. In real field organizations, a lot of impactful work happens because someone takes initiative without being assigned.
+
+Examples:
+
+A ward volunteer organizes a local meeting on their own.
+A field engineer fixes an issue before a ticket exists.
+A sales executive conducts a local customer event.
+An NGO volunteer runs a cleanliness drive.
+A district leader starts a membership campaign.
+
+Today these contributions are usually invisible to management.
+
+Add a new activity source:
+
+```txt
+Assigned Activity
+    OR
+Self-Initiated Activity
+
+```
+
+**Activity Types**
+
+```txt
+1. Assigned Activity
+   Created by Manager
+
+2. Self-Initiated Activity
+   Created by Worker
+
+3. Collaborative Activity
+   Created by Team/Group
+
+4. Recurring Activity
+   System Generated
+```
+
+## Self-initiated Activity Workflow
+
+```txt
+Worker Creates Activity
+           ↓
+Manager Notified
+           ↓
+Manager Reviews
+           ↓
+Approve Initiative
+OR
+Need More Info
+OR
+Acknowledge Initiative
+           ↓
+Work Execution
+           ↓
+Updates Submitted
+           ↓
+Completion
+           ↓
+Manager Closure
+```
+
+Example
+**Ward Volunteer** creates
+
+```txt
+Title:
+Membership Drive in Ward 22
+
+Reason:
+Low membership in this area
+
+Expected Outcome:
+100 new members
+
+Target Date:
+15 days
+```
+
+Manager receives :
+
+```txt
+Anand swaroop proposed a new activity
+
+## Flow
+
+Approve
+Approve + Assign Budget
+Need Info
+Acknowledge
+Convert to Team Activity
+
+```
 
 ## 8. Activity Feed
 
@@ -521,5 +616,72 @@ Bulk Status Update
 
 Bulk Reassignment
 ```
+
+## 3. Idea → Activity Pipeline
+
+Think of it as internal innovation management.
+
+```txt
+Idea Submitted
+      ↓
+Approved
+      ↓
+Converted To Activity
+      ↓
+Assigned Resources
+      ↓
+Execution
+```
+
+### Recognition & Engagement
+
+Track employees who take initiative.
+metrics
+
+```txt
+Initiatives Proposed
+Initiatives Approved
+Initiatives Completed
+Initiative Success Rate
+```
+
+### Impact Reporting
+
+When closing an initiative:
+
+```txt
+What was achieved?
+
+People reached
+
+Members enrolled
+
+Villages covered
+
+Issues resolved
+
+Funds raised
+
+Hours volunteered
+
+```
+
+## 4.Gamification
+
+Badges:
+
+```txt
+Initiator
+
+Community Leader
+
+Top Volunteer
+
+Problem Solver
+
+Field Champion
+```
+
+Reward proactive people.
 
 That should make it suitable for political parties, NGOs, field sales, grassroots campaigns, government programs, and large distributed workforces with hundreds of thousands of users. This generic hierarchy engine is the architectural decision that should make the platform scalable across industries.
